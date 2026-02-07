@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusAI | Integrated Operations Suite</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000000;
+            --deep-grey: #0a0a0a;
+            --border-grey: #222;
+            --text-grey: #888;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.03);
+            --neon-cyan: rgba(0, 255, 220, 0.8);
+        }
+
+        /* --- GLOBAL STYLES --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--black); color: var(--white); overflow: hidden; width: 100vw; height: 100vh; }
+
+        /* --- BACKGROUND CANVAS --- */
+        #canvas-club {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; 
+            pointer-events: none;
+        }
+
+        /* --- VIEWPORT MANAGEMENT --- */
+        .page-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none; 
+            overflow-y: auto;
+            z-index: 10; 
+        }
+
+        .page-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HERO SECTION --- */
+        #home {
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, rgba(17, 17, 17, 0.5) 0%, #000 100%);
+            text-align: center;
+        }
+
+        #home h1 {
+            font-size: clamp(3rem, 10vw, 6rem);
+            letter-spacing: 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fff, #444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .description {
+            max-width: 650px;
+            color: var(--text-grey);
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            line-height: 1.8;
+            position: relative;
+        }
+
+        /* --- REGISTRATION PORTAL --- */
+        .reg-box {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border: 1px solid var(--border-grey);
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 0 50px rgba(255,255,255,0.02);
+            position: relative;
+        }
+
+        .reg-box input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-grey);
+            color: white;
+            outline: none;
+        }
+
+        .btn-enter {
+            width: 100%;
+            padding: 15px;
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.4s;
+        }
+
+        .btn-enter:hover { background: #ccc; letter-spacing: 4px; }
+
+        /* --- PORTAL GRID --- */
+        #portal-selection {
+            padding: 120px 5%;
+            background: rgba(0,0,0,0.9);
+            color: var(--white);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 60px auto 0;
+        }
+
+        .portal-card {
+            background: #111;
+            border: 1px solid var(--border-grey);
+            padding: 60px 30px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--white);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .portal-card:hover {
+            transform: translateY(-20px);
+            color: var(--black);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .portal-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 0%;
+            background: var(--white);
+            transition: 0.5s;
+            z-index: 0;
+        }
+
+        .portal-card:hover::before { height: 100%; }
+        .portal-card * { position: relative; z-index: 1; }
+        .portal-card i { font-size: 3rem; margin-bottom: 25px; display: block; }
+
+        /* --- WORKSPACE SECTIONS --- */
+        .workspace {
+            padding: 100px 10%;
+            background: var(--deep-grey);
+            border-top: 1px solid var(--border-grey);
+        }
+
+        .workspace h2 { font-size: 3rem; text-transform: uppercase; margin-bottom: 30px; }
+
+        .form-container {
+            background: var(--black);
+            border: 1px solid var(--border-grey);
+            padding: 40px;
+            max-width: 800px;
+        }
+
+        label { display: block; font-size: 10px; letter-spacing: 2px; margin-bottom: 10px; color: var(--text-grey); }
+        input, textarea, select {
+            width: 100%; padding: 15px; background: transparent; 
+            border: 1px solid var(--border-grey); color: white; margin-bottom: 20px;
+        }
+
+        .result-box {
+            margin-top: 30px; padding: 20px; border-left: 3px solid var(--white);
+            background: rgba(255,255,255,0.02); display: none;
+            color: #ddd; line-height: 1.6;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--text-grey);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: 0.3s;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-back:hover { color: var(--white); }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-club"></canvas>
+
+    <section id="home" class="page-section active">
+        <h1>NEXUSAI</h1>
+        <p class="description">
+            Welcome to NexusAI, a premier intelligence suite engineered to optimize your market positioning and drive scalable growth.
+        </p>
+
+        <div class="reg-box">
+            <h4 style="font-size: 10px; letter-spacing: 4px; margin-bottom: 20px; opacity: 0.6;">AUTHENTICATION REQUIRED</h4>
+            <input type="text" placeholder="NAME" id="userName">
+            <input type="password" placeholder="ACCESS KEY">
+            <button class="btn-enter" onclick="navigateTo('portal-selection')">Initialize System</button>
+        </div>
+    </section>
+
+    <section id="portal-selection" class="page-section">
+        <div style="text-align: center; padding-top: 50px;">
+            <button onclick="navigateBack()" class="btn-back" style="color: #666;"><i class="fas fa-power-off"></i> Logout</button>
+            <h2 style="letter-spacing: 5px; text-transform: uppercase;">Command Modules</h2>
+            <p style="color: #666;">Choose a portal to begin data operations</p>
+        </div>
+
+        <div class="grid-container">
+            <div onclick="navigateTo('campaign')" class="portal-card">
+                <i class="fas fa-bullhorn"></i>
+                <h3>Campaign Generation</h3>
+            </div>
+            <div onclick="navigateTo('pitch')" class="portal-card">
+                <i class="fas fa-microphone-alt"></i>
+                <h3>Sales Pitch Creation</h3>
+            </div>
+            <div onclick="navigateTo('scoring')" class="portal-card">
+                <i class="fas fa-chart-pie"></i>
+                <h3>Lead Scoring</h3>
+            </div>
+            <div onclick="navigateTo('market')" class="portal-card">
+                <i class="fas fa-globe"></i>
+                <h3>Market Analysis</h3>
+            </div>
+            <div onclick="navigateTo('insights')" class="portal-card">
+                <i class="fas fa-brain"></i>
+                <h3>Business Insights</h3>
+            </div>
+        </div>
+    </section>
+
+    <section id="campaign" class="page-section workspace">
+        <button onclick="navigateBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+        <h2>Campaign Generator</h2>
+        <div class="form-container">
+            <label>PRODUCT NAME</label>
+            <input type="text" id="campaignName" placeholder="e.g., Marketing Mind">
+            <button class="btn-enter" onclick="runAI('campaign', 'campaignName', 'campaign-res')">Generate Strategy</button>
+            <div id="campaign-res" class="result-box"></div>
+        </div>
+    </section>
+
+    <section id="pitch" class="page-section workspace">
+        <button onclick="navigateBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+        <h2>Sales Pitch</h2>
+        <div class="form-container">
+            <label>SOLUTION</label>
+            <input type="text" id="pitchName" placeholder="e.g., Cloud Inventory">
+            <button class="btn-enter" onclick="runAI('pitch', 'pitchName', 'pitch-res')">Draft Pitch</button>
+            <div id="pitch-res" class="result-box"></div>
+        </div>
+    </section>
+
+    <section id="scoring" class="page-section workspace">
+        <button onclick="navigateBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+        <h2>Lead Scoring</h2>
+        <div class="form-container">
+            <label>LEAD DATA</label>
+            <input type="text" id="scoreName" placeholder="e.g., Sarah Johnson - $50k budget">
+            <button class="btn-enter" onclick="runAI('scoring', 'scoreName', 'score-res')">Score Lead</button>
+            <div id="score-res" class="result-box"></div>
+        </div>
+    </section>
+
+    <section id="market" class="page-section workspace">
+        <button onclick="navigateBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+        <h2>Market Analysis</h2>
+        <div class="form-container">
+            <label>INDUSTRY</label>
+            <input type="text" id="marketName" placeholder="e.g., Tech Education">
+            <button class="btn-enter" onclick="runAI('market', 'marketName', 'market-res')">Analyze Market</button>
+            <div id="market-res" class="result-box"></div>
+        </div>
+    </section>
+
+    <section id="insights" class="page-section workspace">
+        <button onclick="navigateBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button>
+        <h2>Business Insights</h2>
+        <div class="form-container">
+            <label>BUSINESS CONTEXT</label>
+            <input type="text" id="insightName" placeholder="e.g., NexusAI Growth">
+            <button class="btn-enter" onclick="runAI('insights', 'insightName', 'insights-res')">Get Insights</button>
+            <div id="insights-res" class="result-box"></div>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        /* --- NAVIGATION LOGIC --- */
+        let navigationStack = ['home'];
+
+        function navigateTo(id) {
+            const currentSection = navigationStack[navigationStack.length - 1];
+            document.getElementById(currentSection).classList.remove('active');
+            document.getElementById(id).classList.add('active');
+            navigationStack.push(id);
+        }
+
+        function navigateBack() {
+            if (navigationStack.length <= 1) return;
+            const currentSection = navigationStack.pop();
+            const previousSection = navigationStack[navigationStack.length - 1];
+            document.getElementById(currentSection).classList.remove('active');
+            document.getElementById(previousSection).classList.add('active');
+        }
+
+        /* --- THE AI ENGINE CONNECTION --- */
+        async function runAI(category, inputId, resId) {
+            const userInput = document.getElementById(inputId).value;
+            const displayBox = document.getElementById(resId);
+
+            if (!userInput) return alert("Please enter data first.");
+
+            displayBox.style.display = 'block';
+            displayBox.innerHTML = "SYSTEM: Initializing " + category.toUpperCase() + " Neural Core...";
+
+            try {
+                const response = await fetch('http://localhost:3000/api/nexus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category: category, details: userInput })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    displayBox.innerHTML = marked.parse(result.data);
+                } else {
+                    displayBox.innerHTML = "ERROR: System Failure.";
+                }
+            } catch (err) {
+                displayBox.innerHTML = "OFFLINE: Ensure server.js is running.";
+            }
+        }
+
+        /* --- NEON RAIN LOGIC --- */
+        const canvas = document.getElementById("canvas-club");
+        const ctx = canvas.getContext("2d");
+        let w, h;
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        window.addEventListener("resize", resize);
+        resize();
+
+        function random(min, max) { return Math.random() * (max - min) + min; }
+
+        function Rain() { this.reset(); }
+        Rain.prototype.reset = function () {
+            this.x = random(0, w);
+            this.y = random(-h, 0);
+            this.len = random(30, 80);
+            this.speed = random(6, 10);
+            this.alpha = random(0.3, 1);
+        };
+        Rain.prototype.update = function () {
+            this.y += this.speed;
+            if (this.y > h * 0.95) {
+                ripples.push(new Ripple(this.x, h * 0.95));
+                this.reset();
+            }
+        };
+        Rain.prototype.draw = function () {
+            ctx.strokeStyle = `rgba(0, 255, 220, ${this.alpha})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x, this.y + this.len);
+            ctx.stroke();
+        };
+
+        function Ripple(x, y) {
+            this.x = x; this.y = y; this.r = 2; this.alpha = 0.8;
+        }
+        Ripple.prototype.update = function () {
+            this.r += 1.5;
+            this.alpha *= 0.96;
+        };
+        Ripple.prototype.draw = function () {
+            ctx.strokeStyle = `rgba(0, 255, 220, ${this.alpha})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.stroke();
+        };
+
+        const rainDrops = [];
+        const ripples = [];
+        for (let i = 0; i < 120; i++) { rainDrops.push(new Rain()); }
+
+        function animate() {
+            ctx.fillStyle = "rgba(0,0,0,0.2)";
+            ctx.fillRect(0, 0, w, h);
+            rainDrops.forEach(r => { r.update(); r.draw(); });
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                ripples[i].update();
+                ripples[i].draw();
+                if (ripples[i].alpha < 0.05) { ripples.splice(i, 1); }
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
